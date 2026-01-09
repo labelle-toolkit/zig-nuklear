@@ -1,7 +1,8 @@
 .{
-    .name = "nuklear",
+    .fingerprint = 0xee9396e627d45c4,
+    .name = .nuklear,
     .version = "4.12.0",
-    .minimum_zig_version = "0.13.0",
+    .minimum_zig_version = "0.15.2",
     .paths = .{
         "src",
         "build.zig",

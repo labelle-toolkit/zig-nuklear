@@ -1,3 +1,5 @@
+const std = @import("std");
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -25,13 +27,17 @@ pub fn build(b: *std.Build) void {
         .NK_KEYSTATE_BASED_INPUT = boolOption(b, "keystate_based_input", "Use key state for each frame rather than key press/release events"),
     });
 
-    const lib = b.addStaticLibrary(.{
+    // Create static library using Zig 0.15+ API
+    const lib = b.addLibrary(.{
+        .linkage = .static,
         .name = "nuklear",
-        .root_source_file = b.path("src/nuklear.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/nuklear.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
-    lib.addConfigHeader(config);
+    lib.root_module.addConfigHeader(config);
     lib.addIncludePath(b.path("src"));
     lib.addCSourceFile(.{
         .file = b.path("src/nuklear.c"),
@@ -40,18 +46,31 @@ pub fn build(b: *std.Build) void {
     if (link_libc) lib.linkLibC();
     b.installArtifact(lib);
 
+    // Create module for external use
     const mod = b.addModule("nuklear", .{
         .root_source_file = b.path("src/bindings.zig"),
+        .target = target,
+        .optimize = optimize,
     });
     mod.addConfigHeader(config);
     mod.addIncludePath(b.path("src"));
     mod.linkLibrary(lib);
 
+    // Tests
     const test_step = b.addTest(.{
-        .root_source_file = b.path("src/bindings.zig"),
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/bindings.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
+    test_step.root_module.addConfigHeader(config);
+    test_step.addIncludePath(b.path("src"));
     test_step.linkLibrary(lib);
-    b.getInstallStep().dependOn(&b.addRunArtifact(test_step).step);
+
+    const run_tests = b.addRunArtifact(test_step);
+    const test_step_cmd = b.step("test", "Run tests");
+    test_step_cmd.dependOn(&run_tests.step);
 }
 
 // Returns ?void rather than bool because ConfigHeader is silly
@@ -59,5 +78,3 @@ fn boolOption(b: *std.Build, name: []const u8, desc: []const u8) ?void {
     const value = b.option(bool, name, desc) orelse false;
     return if (value) {} else null;
 }
-
-const std = @import("std");
