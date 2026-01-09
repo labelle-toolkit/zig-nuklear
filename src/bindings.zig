@@ -155,7 +155,7 @@ pub const FontAtlas = extern struct {
             @compileError("`addDefault` requires default font. Pass `.default_font = true` in nuklear build options.");
         }
 
-        const font = c.nk_font_atlas_add_default(&atlas.c, size, config);
+        const font: *c.nk_font = c.nk_font_atlas_add_default(&atlas.c, size, config) orelse unreachable;
         return @fieldParentPtr("c", font);
     }
 
