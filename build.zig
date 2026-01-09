@@ -25,6 +25,9 @@ pub fn build(b: *std.Build) void {
         .NK_ZERO_COMMAND_MEMORY = boolOption(b, "zero_command_memory", "Zero out memory for each drawing command added to a drawing queue"),
         .NK_UINT_DRAW_INDEX = boolOption(b, "draw_index_32bit", "Use 32-bit vertex index elements, instead of 16-bit (requires vertex_backend)"),
         .NK_KEYSTATE_BASED_INPUT = boolOption(b, "keystate_based_input", "Use key state for each frame rather than key press/release events"),
+
+        // STB library exclusions (for avoiding duplicate symbols when host project provides them)
+        .NK_NO_STB_RECT_PACK_IMPLEMENTATION = boolOption(b, "no_stb_rect_pack", "Skip bundled stb_rect_pack (use when host provides it, e.g., raylib)"),
     });
 
     // Create static library using Zig 0.15+ API
