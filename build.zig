@@ -41,12 +41,12 @@ pub fn build(b: *std.Build) void {
         }),
     });
     lib.root_module.addConfigHeader(config);
-    lib.addIncludePath(b.path("src"));
-    lib.addCSourceFile(.{
+    lib.root_module.addIncludePath(b.path("src"));
+    lib.root_module.addCSourceFile(.{
         .file = b.path("src/nuklear.c"),
         .flags = &.{ "-std=c11", "-Wall", "-Werror", "-Wno-unused-function" },
     });
-    if (link_libc) lib.linkLibC();
+    if (link_libc) lib.root_module.link_libc = true;
     b.installArtifact(lib);
 
     // Create module for external use
@@ -68,8 +68,8 @@ pub fn build(b: *std.Build) void {
         }),
     });
     test_step.root_module.addConfigHeader(config);
-    test_step.addIncludePath(b.path("src"));
-    test_step.linkLibrary(lib);
+    test_step.root_module.addIncludePath(b.path("src"));
+    test_step.root_module.linkLibrary(lib);
 
     const run_tests = b.addRunArtifact(test_step);
     const test_step_cmd = b.step("test", "Run tests");
