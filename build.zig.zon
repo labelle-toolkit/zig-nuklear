@@ -1,7 +1,7 @@
 .{
     .fingerprint = 0xee9396e627d45c4,
     .name = .nuklear,
-    .version = "4.12.8",
+    .version = "0.1.0",
     .minimum_zig_version = "0.16.0",
     .paths = .{
         "src",
